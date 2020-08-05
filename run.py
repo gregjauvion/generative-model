@@ -98,7 +98,7 @@ if __name__=='__main__':
     # Generate all images between two random vectors
     ###
 
-    vs = np.random.RandomState(1234321).randn(2, *generator.input_shapes[0][1:])
+    vs = np.random.RandomState(123454321).randn(2, *generator.input_shapes[0][1:])
     v1, v2 = vs[0,:], vs[1,:]
 
     # Interpolate between both vectors    

@@ -7,4 +7,5 @@ scipy
 numpy
 Pillow
 tensorflow-gpu==1.15
+tensorflow-datasets
 tqdm
