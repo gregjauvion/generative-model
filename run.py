@@ -13,6 +13,10 @@ TYPE_MODEL = {
     'living_room': 'karras2018iclr-lsun-livingroom-256x256.pkl'
 }
 
+# Images are generated per batch to avoid OOM errors
+BATCH_SIZE = 10
+
+
 
 def load_model(type_):
 
@@ -22,7 +26,7 @@ def load_model(type_):
     return model
 
 
-def generate(model, number, path_out):
+def generate(model, number, path_out, vectors=None):
     """
     Generate {number} images with {model}.
     Save in {path} a dict with:
@@ -30,14 +34,15 @@ def generate(model, number, path_out):
     - images: The images as arrays
     """
 
-    # Generate random latent vectors
-    vectors = np.random.RandomState().randn(number, *model.input_shapes[0][1:])
+    # Generate random latent vectors if not specified
+    if vectors is None:
+        vectors = np.random.rand(number, *model.input_shapes[0][1:])
 
     # Generate dummy labels (not used by those networks but they need to be here)
     labels = np.zeros([vectors.shape[0]] + model.input_shapes[1][1:])
 
-    # Generate the images
-    images = model.run(vectors, labels)
+    # Generate the images per batch of BATCH_SIZE
+    images = np.concatenate([model.run(vectors[i*BATCH_SIZE:(i + 1)*BATCH_SIZE], labels[i*BATCH_SIZE:(i + 1)*BATCH_SIZE])])
 
     # Convert images to PIL-compatible format.
     images = np.clip(np.rint((images + 1.0) / 2.0 * 255.0), 0.0, 255.0).astype(np.uint8) # [-1,1] => [0,255]
@@ -73,10 +78,29 @@ if __name__=='__main__':
     # Set TF session
     tf.InteractiveSession()
 
-    # Generate some images
+    # Load model
     type_ = 'living_room'
     model = load_model(type_)
-    generate(model, 20, f'outputs/{type_}')
 
-    # Save as png
-    write_pngs(f'outputs/{type_}')
+
+    ###
+    # Random images generation
+    ###
+
+    generate(model, 20, f'outputs/{type_}/random')
+    write_pngs(f'outputs/{type_}/random')
+
+
+    ###
+    # Generate all images between two random vectors
+    ###
+
+    vs = np.random.rand(2, *model.input_shapes[0][1:])
+    v1, v2 = vs[0,:], vs[1,:]
+
+    # Interpolate between both vectors
+    number = 100
+    vectors = np.concatenate([(1 - i / number) * v1 + (i / number) * v2 for i in range(number)])
+    generate(model, number, f'outputs/{type_}/interpolation', vectors=vectors)
+    write_pngs(f'outputs/{type_}/interpolation')
+
