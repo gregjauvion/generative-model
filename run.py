@@ -17,12 +17,12 @@ TYPE_MODEL = {
 def load_model(type_):
 
     with open(f'models/{TYPE_MODEL[type_]}', 'rb') as f:
-        _, _, model = pickle.load(file)
+        _, _, model = pickle.load(f)
 
     return model
 
 
-def generate(model, number, path):
+def generate(model, number, path_out):
     """
     Generate {number} images with {model}.
     Save in {path} a dict with:
@@ -31,10 +31,13 @@ def generate(model, number, path):
     """
 
     # Generate random latent vectors
-    vectors = np.random.RandomState().randn(number, model.input_shapes[0][1:])
+    vectors = np.random.RandomState().randn(number, *model.input_shapes[0][1:])
+
+    # Generate dummy labels (not used by those networks but they need to be here)
+    labels = np.zeros([vectors.shape[0]] + model.input_shapes[1][1:])
 
     # Generate the images
-    images = model.run(vectors, _)
+    images = model.run(vectors, labels)
 
     # Convert images to PIL-compatible format.
     images = np.clip(np.rint((images + 1.0) / 2.0 * 255.0), 0.0, 255.0).astype(np.uint8) # [-1,1] => [0,255]
@@ -42,27 +45,27 @@ def generate(model, number, path):
 
     # Dump
     result = {'vectors': vectors, 'images': images}
-    os.makedirs(path, exist_ok=True)
-    with open(path, 'wb') as f:
+    os.makedirs(path_out, exist_ok=True)
+    with open(f'{path_out}/images.pkl', 'wb') as f:
         pickle.dump(result, f)
 
     return
 
 
-def write_pngs(path_in, path_out):
+def write_pngs(path_in):
     """
-    Read pickle written by generate() and write the pngs in the directory {path_out}
+    Read pickle written by generate() and write the pngs
     """
 
     with open(path_in, 'rb') as f:
         dump = pickle.load(f)
 
-    os.makedirs(path_out, exist_ok=True)
+    os.makedirs(f'{path_in}/images', exist_ok=True)
 
     # Write all pngs
     images = dump['images']
     for i in range(images.shape[0]):
-        PIL.Image.fromarray(images[i], 'RGB').save(f'{path_out}/{i}.png')
+        PIL.Image.fromarray(images[i], 'RGB').save(f'{path_in}/images/{i}.png')
 
 
 if __name__=='__main__':
@@ -72,7 +75,7 @@ if __name__=='__main__':
 
     # Generate some images
     model = load_model('face')
-    generate(model, 20, 'outputs/face/images.pkl')
+    generate(model, 20, 'outputs/face')
 
     # Save as png
     write_pngs('outputs/face/images.pkl', 'outputs/face')
