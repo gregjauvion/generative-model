@@ -82,12 +82,14 @@ if __name__=='__main__':
     type_ = 'living_room'
     model = load_model(type_)
 
+    number = 100
+
 
     ###
     # Random images generation
     ###
 
-    generate(model, 20, f'outputs/{type_}/random')
+    generate(model, number, f'outputs/{type_}/random')
     write_pngs(f'outputs/{type_}/random')
 
 
@@ -99,7 +101,7 @@ if __name__=='__main__':
     v1, v2 = vs[0,:], vs[1,:]
 
     # Interpolate between both vectors
-    number = 100
+    
     vectors = np.concatenate([(1 - i / number) * v1 + (i / number) * v2 for i in range(number)])
     generate(model, number, f'outputs/{type_}/interpolation', vectors=vectors)
     write_pngs(f'outputs/{type_}/interpolation')
