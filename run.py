@@ -83,7 +83,7 @@ if __name__=='__main__':
     type_ = 'face'
     generator, discriminator = load_model(type_)
 
-    number = 50
+    number = 20
 
 
     ###
