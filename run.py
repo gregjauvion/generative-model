@@ -36,7 +36,7 @@ def generate(generator, discriminator, number, path_out, vectors=None):
 
     # Generate random latent vectors if not specified
     if vectors is None:
-        vectors = np.random.rand(number, *generator.input_shapes[0][1:])
+        vectors = np.random.RandomState(1234321).randn(number, *generator.input_shapes[0][1:])
 
     # Generate dummy labels (not used by those networks but they need to be here)
     labels = np.zeros([vectors.shape[0]] + generator.input_shapes[1][1:])
@@ -98,7 +98,7 @@ if __name__=='__main__':
     # Generate all images between two random vectors
     ###
 
-    vs = np.random.rand(2, *generator.input_shapes[0][1:])
+    vs = np.random.RandomState(1234321).randn(2, *generator.input_shapes[0][1:])
     v1, v2 = vs[0,:], vs[1,:]
 
     # Interpolate between both vectors    
