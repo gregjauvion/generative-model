@@ -57,7 +57,7 @@ def write_pngs(path_in):
     Read pickle written by generate() and write the pngs
     """
 
-    with open(path_in, 'rb') as f:
+    with open(f'{path_in}/images.pkl', 'rb') as f:
         dump = pickle.load(f)
 
     os.makedirs(f'{path_in}/images', exist_ok=True)
@@ -74,8 +74,9 @@ if __name__=='__main__':
     tf.InteractiveSession()
 
     # Generate some images
-    model = load_model('face')
-    generate(model, 20, 'outputs/face')
+    type_ = 'living_room'
+    model = load_model(type_)
+    generate(model, 20, f'outputs/{type_}')
 
     # Save as png
-    write_pngs('outputs/face/images.pkl', 'outputs/face')
+    write_pngs(f'outputs/{type_}')
