@@ -43,7 +43,7 @@ def generate(generator, discriminator, number, path_out, vectors=None):
 
     # Generate the images per batch of BATCH_SIZE
     images = np.concatenate([generator.run(vectors[i*BATCH_SIZE:(i + 1)*BATCH_SIZE], labels[i*BATCH_SIZE:(i + 1)*BATCH_SIZE]) for i in range(number//BATCH_SIZE)])
-    probabilities = np.concatenate([discriminator.run(images[i*BATCH_SIZE:(i + 1)*BATCH_SIZE]) for i in range(number//BATCH_SIZE)])
+    probabilities = np.concatenate([discriminator.run(images[i*BATCH_SIZE:(i + 1)*BATCH_SIZE])[0].reshape(-1) for i in range(number//BATCH_SIZE)])
 
     # Convert images to PIL-compatible format.
     images = np.clip(np.rint((images + 1.0) / 2.0 * 255.0), 0.0, 255.0).astype(np.uint8) # [-1,1] => [0,255]
