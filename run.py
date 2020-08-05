@@ -21,12 +21,12 @@ BATCH_SIZE = 10
 def load_model(type_):
 
     with open(f'models/{TYPE_MODEL[type_]}', 'rb') as f:
-        _, _, model = pickle.load(f)
+        _, discriminator, generator = pickle.load(f)
 
-    return model
+    return generator, discriminator
 
 
-def generate(model, number, path_out, vectors=None):
+def generate(generator, discriminator, number, path_out, vectors=None):
     """
     Generate {number} images with {model}.
     Save in {path} a dict with:
@@ -36,20 +36,21 @@ def generate(model, number, path_out, vectors=None):
 
     # Generate random latent vectors if not specified
     if vectors is None:
-        vectors = np.random.rand(number, *model.input_shapes[0][1:])
+        vectors = np.random.rand(number, *generator.input_shapes[0][1:])
 
     # Generate dummy labels (not used by those networks but they need to be here)
-    labels = np.zeros([vectors.shape[0]] + model.input_shapes[1][1:])
+    labels = np.zeros([vectors.shape[0]] + generator.input_shapes[1][1:])
 
     # Generate the images per batch of BATCH_SIZE
-    images = np.concatenate([model.run(vectors[i*BATCH_SIZE:(i + 1)*BATCH_SIZE], labels[i*BATCH_SIZE:(i + 1)*BATCH_SIZE])])
+    images = np.concatenate([generator.run(vectors[i*BATCH_SIZE:(i + 1)*BATCH_SIZE], labels[i*BATCH_SIZE:(i + 1)*BATCH_SIZE]) for i in range(number//BATCH_SIZE)])
+    probabilities = discriminator.run(images)[0].reshape(-1)
 
     # Convert images to PIL-compatible format.
     images = np.clip(np.rint((images + 1.0) / 2.0 * 255.0), 0.0, 255.0).astype(np.uint8) # [-1,1] => [0,255]
     images = images.transpose(0, 2, 3, 1) # NCHW => NHWC
 
     # Dump
-    result = {'vectors': vectors, 'images': images}
+    result = {'vectors': vectors, 'images': images, 'probabilities': probabilities}
     os.makedirs(path_out, exist_ok=True)
     with open(f'{path_out}/images.pkl', 'wb') as f:
         pickle.dump(result, f)
@@ -79,17 +80,17 @@ if __name__=='__main__':
     tf.InteractiveSession()
 
     # Load model
-    type_ = 'living_room'
-    model = load_model(type_)
+    type_ = 'face'
+    generator, discriminator = load_model(type_)
 
-    number = 100
+    number = 50
 
 
     ###
     # Random images generation
     ###
 
-    generate(model, number, f'outputs/{type_}/random')
+    generate(generator, discriminator, number, f'outputs/{type_}/random')
     write_pngs(f'outputs/{type_}/random')
 
 
@@ -97,12 +98,10 @@ if __name__=='__main__':
     # Generate all images between two random vectors
     ###
 
-    vs = np.random.rand(2, *model.input_shapes[0][1:])
+    vs = np.random.rand(2, *generator.input_shapes[0][1:])
     v1, v2 = vs[0,:], vs[1,:]
 
-    # Interpolate between both vectors
-    
-    vectors = np.concatenate([(1 - i / number) * v1 + (i / number) * v2 for i in range(number)])
-    generate(model, number, f'outputs/{type_}/interpolation', vectors=vectors)
+    # Interpolate between both vectors    
+    vectors = np.concatenate([[(1 - i / number) * v1 + (i / number) * v2] for i in range(number)])
+    generate(generator, discriminator, number, f'outputs/{type_}/interpolation', vectors=vectors)
     write_pngs(f'outputs/{type_}/interpolation')
-
