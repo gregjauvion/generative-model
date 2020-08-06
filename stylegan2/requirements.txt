@@ -1,0 +1,11 @@
+progress
+ipython
+graphs
+dm-sonnet<2
+sklearn
+scipy
+numpy
+Pillow
+tensorflow==1.15
+tensorflow-datasets
+tqdm
