@@ -8,7 +8,7 @@ import PIL
 import tensorflow as tf
 
 
-BATCH_SIZE = 5
+BATCH_SIZE = 1
 
 TYPE_MODEL = {
     'church': 'stylegan2-church-config-f.pkl',
@@ -25,7 +25,7 @@ def load_model(type_):
     return generator, discriminator
 
 
-def generate_images(generator, discriminator, number, path_out, vectors=None):
+def generate(generator, discriminator, number, path_out, vectors=None):
 
     rnd = np.random.RandomState(1234321)
 
@@ -41,12 +41,14 @@ def generate_images(generator, discriminator, number, path_out, vectors=None):
         tflib.set_vars({var: rnd.randn(*var.shape.as_list()) for var in noise_vars}) # [height, width]
 
         imgs = generator.run(vectors[i*BATCH_SIZE:(i + 1)*BATCH_SIZE], None)
-        probas = discriminator.run(imgs, None).reshape(-1)
+        #probas = discriminator.run(imgs, None).reshape(-1)
+        probas = None
         if images is None:
-            images, probabilities = imgs, probas
+            images = imgs
+            probabilities = probas
         else:
             images = np.concatenate((images, imgs))
-            probabilities = np.concatenate((probabilities, probas))
+            #probabilities = np.concatenate((probabilities, probas))
 
     # Convert images to PIL-compatible format
     images = np.clip(np.rint((images + 1.0) / 2.0 * 255.0), 0.0, 255.0).astype(np.uint8) # [-1,1] => [0,255]
@@ -89,7 +91,7 @@ if __name__=='__main__':
     type_ = 'face'
     generator, discriminator = load_model('face')
 
-    number = 20
+    number = 30
 
 
     ###
