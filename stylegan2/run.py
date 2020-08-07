@@ -8,13 +8,17 @@ import PIL
 import tensorflow as tf
 
 
-BATCH_SIZE = 1
-
+# The models used here come from Karras 2019 CVPR (https://arxiv.org/pdf/1912.04958.pdf)
+# All available models are listed here https://github.com/NVlabs/stylegan2/blob/master/pretrained_networks.py
 TYPE_MODEL = {
     'church': 'stylegan2-church-config-f.pkl',
     'horse': 'stylegan2-horse-config-f.pkl',
-    'face': 'stylegan2-ffhq-config-f.pkl'
+    'face': 'stylegan2-ffhq-config-f.pkl',
+    'car': 'stylegan2-car-config-f.pkl'
 }
+
+# Images are generated per batch to avoid OOM errors
+BATCH_SIZE = 1
 
 
 def load_model(type_):
@@ -89,7 +93,7 @@ if __name__=='__main__':
 
     # Load model
     type_ = 'face'
-    generator, discriminator = load_model('face')
+    generator, discriminator = load_model(type_)
 
     number = 30
 
