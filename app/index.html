@@ -1,0 +1,122 @@
+<h1>A New Perspective on Generative Adversarial Networks</h1>
+
+Generative Adversarial Networks have been first introduced in 2014 in <a href="https://papers.nips.cc/paper/5423-generative-adversarial-nets.pdf">this paper</a>. The samples generated in this paper using MNIST and Cifar-10 datasets were promising but clearly far from realistic.
+
+Numerous reasearchers have worked on those models and have designed much more efficient architectures able to generate more realistic samples with a much better resolution. In this post, we detail the results obtained by state-of-the-art GANs trained on the following datasets: faces, cars, churches, horses and living rooms.
+
+Those results are based on the two following papers by Karras et al.:
+<ul>
+ <li>Progressive Growing GANs (<a href="https://arxiv.org/abs/1710.10196">here</a>) for the living rooms GAN</li>
+ <li>StyleGan2 (<a href="https://arxiv.org/abs/1912.04958">here</a>) for other GANs</li>
+</ul>
+
+<script>
+
+    // Paths for each input types
+    PATHS = {
+        'Faces': 'inputs/face/',
+        'Cars': 'inputs/car/',
+        'Churches': 'inputs/church/',
+        'Horses': 'inputs/horse/',
+        'Living Rooms': 'inputs/living_room/'
+    }
+
+    function initSlider() {
+        document.getElementById("random_images_range").value = 1;
+    }
+    function initSliderInterpolation() {
+        document.getElementById("interpolation_images_range").value = 1;
+
+        var select_value = document.getElementById("interpolation_images_select").selectedOptions[0].value;
+        document.getElementById("interpolation_image_left").setAttribute("src", getImageNameInterpolation(select_value, 1));
+        document.getElementById("interpolation_image_right").setAttribute("src", getImageNameInterpolation(select_value, 30));
+    }
+
+    function getImageName(select_value, slider_value) {
+        return PATHS[select_value] + "random/images/" + (slider_value-1) + ".png"
+    }
+    function getImageNameInterpolation(select_value, slider_value) {
+        return PATHS[select_value] + "interpolation/images/" + (slider_value-1) + ".png"
+    }
+
+    function updateImage() {
+        // Get selector & slider values
+        var select_value = document.getElementById("random_images_select").selectedOptions[0].value;
+        var slider_value = document.getElementById("random_images_range").value;
+
+        // Change image
+        document.getElementById("random_image").setAttribute("src", getImageName(select_value, slider_value));
+    }
+
+    function updateImageInterpolation() {
+        // Get selector & slider values
+        var select_value = document.getElementById("interpolation_images_select").selectedOptions[0].value;
+        var slider_value = document.getElementById("interpolation_images_range").value;
+
+        // Change image
+        document.getElementById("interpolation_image").setAttribute("src", getImageNameInterpolation(select_value, slider_value));
+    }
+
+</script>
+
+<h2>Image generation</h2>
+
+We provide 30 images generated with the different models. Those images have not been cherry-picked, which explains why some do not look realistic. Though, it is impressing to see how those images are globally very good-looking.
+
+<div class="random_images">
+
+    <div>
+        <select id="random_images_select" onchange="initSlider(); updateImage()">
+            <option>Faces</option>
+            <option>Cars</option>
+            <option>Churches</option>
+            <option>Horses</option>
+            <option>Living Rooms</option>
+        </select>
+    </div>
+
+    <div>
+        <img id="random_image" src="inputs/face/random/images/0.png" alt="" width="300" height="300">
+    </div>
+
+    <div>
+        <input type="range" min="1" max="30" value="1" class="slider" id="random_images_range" oninput="updateImage()">
+    </div>
+</div>
+
+<h2>Image interpolation</h2>
+
+A very nice feature of GANs is that they provide a way to go from one generated image to an other through a continuous set of realistic images. For each model, we provide here interpolated images between two images picked randomly.
+
+<div class="interpolation_images">
+    <div>
+        <select id="interpolation_images_select" onchange="initSliderInterpolation(); updateImageInterpolation()">
+            <option>Faces</option>
+            <option>Cars</option>
+            <option>Churches</option>
+            <option>Horses</option>
+            <option>Living Rooms</option>
+        </select>
+    </div>
+
+    <div>
+        <img id="interpolation_image_left" src="inputs/face/interpolation/images/0.png" alt="" width="100" height="100">
+        <img id="interpolation_image_right" src="inputs/face/interpolation/images/29.png" alt="" width="100" height="100">
+    </div>
+
+    <div>
+        <img id="interpolation_image" src="inputs/face/interpolation/images/0.png" alt="" width="300" height="300">
+    </div>
+
+    <div>
+        <input type="range" min="1" max="30" value="1" class="slider" id="interpolation_images_range" oninput="updateImageInterpolation()">
+    </div>
+</div>
+
+<h2>Next steps</h2>
+
+GANs didn't bring many real-life applications since their creation in 2014. The main reason for this is that they are known to be very hard to train. Recent breakthroughs on GANs training and architecture design improved very significantly their performance.
+
+As highlighted in this post, the state-of-the-art GANs enable to generate very realistic images. GANs can be applied to nearly every kind of data, from living rooms to faces or audio files, as long as they are trained on enough data (AJOUTER QQCHOSE SUR NOMBRE DE SAMPLES NECESSAIRES).
+
+We think that those recent improvements will unlock many applications of GANs, in particular to help people working in creative professions with a new dimension.
